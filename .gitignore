@@ -1,6 +1,9 @@
 # Virtual environment
 receipts/
 
+# Extra files
+data/pdf/
+
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
 
