@@ -25,7 +25,6 @@ __pycache__/
 
 # Output files
 *.out
-*.csv
 *.tsv
 
 # Hidden system files
