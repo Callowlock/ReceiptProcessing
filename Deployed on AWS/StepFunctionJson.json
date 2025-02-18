@@ -37,7 +37,8 @@
           }
         }
       },
-      "Next": "CondenseTextractOutput"
+      "Next": "CondenseTextractOutput",
+      "ResultPath": "$.textract_response"
     },
     "CondenseTextractOutput": {
       "Type": "Task",
@@ -61,7 +62,34 @@
           "JitterStrategy": "FULL"
         }
       ],
-      "Next": "GetAmountAndDate"
+      "Next": "Choice"
+    },
+    "Choice": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.empty",
+          "IsPresent": true,
+          "Next": "Pass"
+        }
+      ],
+      "Default": "GetAmountAndDate"
+    },
+    "Pass": {
+      "Type": "Pass",
+      "Parameters": {
+        "key.$": "$.key",
+        "user_id.$": "$.user_id",
+        "predicted_category": "Meals",
+        "predicted_date": {
+          "full_date": "01/01/1899",
+          "month": "01",
+          "year": "1899",
+          "day": "01"
+        },
+        "predicted_amount": "0.00"
+      },
+      "Next": "InsertIntoTwoRDS"
     },
     "GetAmountAndDate": {
       "Type": "Task",
@@ -119,7 +147,7 @@
         "Body": {
           "prompt.$": "$.prompt",
           "temperature": 0.2,
-          "top_p": 0.9,
+          "top_p": 1,
           "max_gen_len": 100
         }
       },
@@ -148,7 +176,74 @@
           "JitterStrategy": "FULL"
         }
       ],
-      "End": true
+      "Next": "InsertIntoTwoRDS"
+    },
+    "InsertIntoTwoRDS": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "PutToRDS(receipt_pred)",
+          "States": {
+            "PutToRDS(receipt_pred)": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke",
+              "Parameters": {
+                "Payload.$": "$",
+                "FunctionName": "arn:aws:lambda:us-east-1:418295723137:function:PutToRDS:$LATEST"
+              },
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "Lambda.ServiceException",
+                    "Lambda.AWSLambdaException",
+                    "Lambda.SdkClientException",
+                    "Lambda.TooManyRequestsException"
+                  ],
+                  "IntervalSeconds": 1,
+                  "MaxAttempts": 3,
+                  "BackoffRate": 2,
+                  "JitterStrategy": "FULL"
+                }
+              ],
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "PutToRDS(receipt_data)",
+          "States": {
+            "PutToRDS(receipt_data)": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke",
+              "Parameters": {
+                "Payload.$": "$",
+                "FunctionName": "arn:aws:lambda:us-east-1:418295723137:function:PutToRDS-receipt_data:$LATEST"
+              },
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "Lambda.ServiceException",
+                    "Lambda.AWSLambdaException",
+                    "Lambda.SdkClientException",
+                    "Lambda.TooManyRequestsException"
+                  ],
+                  "IntervalSeconds": 1,
+                  "MaxAttempts": 3,
+                  "BackoffRate": 2,
+                  "JitterStrategy": "FULL"
+                }
+              ],
+              "End": true
+            }
+          }
+        }
+      ],
+      "Next": "Pass (1)"
+    },
+    "Pass (1)": {
+      "Type": "Pass",
+      "End": true,
+      "OutputPath": "$.[0].Payload"
     }
   }
 }
