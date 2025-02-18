@@ -3,6 +3,7 @@ receipts/
 
 # Extra files
 data/pdf/
+db_variables.ipynb
 
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
