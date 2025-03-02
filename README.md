@@ -28,6 +28,7 @@
 <p>This notebook explains:</p>
 <ul>
     <li>The design and implementation of AWS Step Functions as a pipeline to process data</li>
+    <li>Users on the Android app interact with the Step function using a REST API</li>
     <li>The state transitions involved in processing receipts</li>
     <li>How extracted data is stored and analyzed</li>
 </ul>
