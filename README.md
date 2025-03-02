@@ -27,7 +27,7 @@
 <h3>3. StepFunctionDescription.ipynb</h3>
 <p>This notebook explains:</p>
 <ul>
-    <li>The design and implementation of AWS Step Functions for managing receipt processing</li>
+    <li>The design and implementation of AWS Step Functions as a pipeline to process data</li>
     <li>The state transitions involved in processing receipts</li>
     <li>How extracted data is stored and analyzed</li>
 </ul>
